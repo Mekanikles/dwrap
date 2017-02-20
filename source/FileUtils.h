@@ -83,7 +83,6 @@ bool ListFilesInDirRecursively(const std::string& baseDir, const std::string& re
 			else if (strcmp(entry->d_name, "..") == 0)
 				continue;
 
-			//printf("    '%s': '%s'\n", dirPath.c_str(), entry->d_name);
 		    FileInfo fileInfo;
 		    fileInfo.name = entry->d_name;
 		    fileInfo.relativePath = relDir.empty() ?  entry->d_name : relDir + "/" + entry->d_name;
@@ -112,14 +111,14 @@ bool ListFilesInDirRecursively(const std::string& baseDir, const std::string& re
 		    }
 		    else
 		    {
-				std::cerr << "Skipping file '" << entry->d_name << "'.\n";
+				LogLine(kDebug, "Skipping file '%s'", entry->d_name);
 		    }
 		}
 		closedir(dir);
 	}
 	else
 	{
-		std::cerr << "Error: could not read directory '" << dirPath << "'.\n";
+		LogLine(kError, "Could not read directory '%s'", dirPath.c_str());
 		return false;
 	}
 
@@ -133,7 +132,6 @@ bool SameRelativeFile(const FileInfo& f1, const FileInfo f2)
 
 bool FileEquals(const FileInfo& f1, const FileInfo& f2)
 {
-	printf("File sizes, 1: %i, 2: %i\n", FileSize(f1), FileSize(f2));
 	if (FileSize(f1) != FileSize(f2))
 		return false;
 

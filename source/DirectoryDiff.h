@@ -28,7 +28,7 @@ void GenerateDirectoryDiffState(const PathSet& paths, not_null<DirectoryDiffStat
 {
 	DiffType diffType = GetPath(paths, kBase) != nullptr ? k3Way : k2Way;
 
-	std::cout << "Diffing as " << ((diffType == k2Way) ? "2way" : "3way") << "\n";
+	LogLine(kDebug, "Diffing as %s...", (diffType == k2Way) ? "2way" : "3way");
 
 	if (diffType == k2Way)
 	{
@@ -46,13 +46,13 @@ void GenerateDirectoryDiffState(const PathSet& paths, not_null<DirectoryDiffStat
 		SortFileList(&leftFiles);
 		SortFileList(&rightFiles);
 
-		printf("Left directory:\n");
+		LogLine(kDebug, "Left directory:");
 		for (const auto& f : leftFiles)
-			printf("    '%s' (%i)\n", f.relativePath.c_str(), DirLevel(f));
+			LogLine(kDebug, "    '%s' (%i)", f.relativePath.c_str(), DirLevel(f));
 
-		printf("Right directory:\n");
+		LogLine(kDebug, "Right directory:");
 		for (const auto& f : rightFiles)
-			printf("    '%s' (%i)\n", f.relativePath.c_str(), DirLevel(f));	
+			LogLine(kDebug, "    '%s' (%i)", f.relativePath.c_str(), DirLevel(f));	
 
 
 		outDirDiffState->diffType = k2Way;
@@ -68,24 +68,24 @@ void GenerateDirectoryDiffState(const PathSet& paths, not_null<DirectoryDiffStat
 			const FileInfo& leftFile = leftFiles[leftStepper];
 			const FileInfo& rightFile = rightFiles[rightStepper];
 
-			printf("Comparing %s, %s:\n", leftFile.relativePath.c_str(), rightFile.relativePath.c_str());
+			LogLine(kDebug, "Comparing %s, %s:", leftFile.relativePath.c_str(), rightFile.relativePath.c_str());
 
 			if (SameRelativeFile(leftFile, rightFile))
 			{
 				bool differs;
 				if (IsDir(leftFile) && IsDir(rightFile))
 				{
-					printf("    Same directory.\n");
+					LogLine(kDebug, "    Same directory.");
 					differs = false;
 				}
 				else
 				{
-					printf("    Same file, checking if equal.\n");
+					LogLine(kDebug, "    Same file, checking if equal.");
 					differs = !FileEquals(leftFile, rightFile);
 					if (differs)
-						printf("File differs.\n");
+						LogLine(kDebug, "    File differs.");
 					else
-						printf("Files identical.\n");
+						LogLine(kDebug, "    Files identical.");
 				}
 
 				entries.push_back(DiffEntry { &leftFile, &rightFile, differs});
@@ -97,13 +97,13 @@ void GenerateDirectoryDiffState(const PathSet& paths, not_null<DirectoryDiffStat
 			{
 				if (FileInfoSortFunc(leftFile, rightFile))
 				{
-					printf("    Sole left file found.\n");
+					LogLine(kDebug, "    Sole left file found.");
 					entries.push_back(DiffEntry { &leftFile, nullptr, true });
 					++leftStepper;
 				}
 				else
 				{
-					printf("    Sole right file found.\n");
+					LogLine(kDebug, "    Sole right file found.");
 					entries.push_back(DiffEntry { nullptr, &rightFile, true});
 					++rightStepper;
 				}

@@ -46,9 +46,6 @@ bool InitRunParams(const std::vector<std::string>& arguments, not_null<RunParams
 	outRunParams->noGUI = false;
 	outRunParams->allowMultipleDiffs = false;
 
-	for (const auto& s : arguments)
-		printf("%s\n", s.c_str());
-
 	for (int i = 0, argCount = arguments.size(); i < argCount; ++i)
 	{
 		const std::string& s = arguments[i];
@@ -58,7 +55,7 @@ bool InitRunParams(const std::vector<std::string>& arguments, not_null<RunParams
 			{
 				if (i >= argCount - 1)
 				{
-					std::cerr << "Error: param '-tool' found but no tool command supplied.\n";
+					LogLine(kError, "param '-tool' found but no tool command supplied.");
 					return EX_IOERR;
 				}
 
@@ -72,9 +69,13 @@ bool InitRunParams(const std::vector<std::string>& arguments, not_null<RunParams
 			{
 				outRunParams->allowMultipleDiffs = true;
 			}
+			else if (s == "--debug")
+			{
+				SetLogLevel(kDebug);
+			}
 			else
 			{
-				std::cerr << "Error: unrecognized parameter '" << s.c_str() << "'.\n";
+				LogLine(kError, "unrecognized parameter '%s'", s.c_str());
 			}
 		}
 		else
@@ -100,7 +101,7 @@ bool VerifyPathParams(const PathSet& paths, not_null<bool> outAllRegularFiles, n
 
 		if (!isFile && !isDir)
 		{
-			std::cerr << "Error: Path '" << p << "' is not a file nor a directory.\n";
+			LogLine(kError, "Path '%s' is not a file nor a directory.", p.c_str());
 			return false;
 		}
 	}
@@ -113,7 +114,7 @@ bool VerifyPathParams(const PathSet& paths, not_null<bool> outAllRegularFiles, n
 
 int CallDiffTool(const RunParams& runParams, const PathSet& files)
 {
-	printf("Parsing command with %lu files.\n", files.size());
+	LogLine(kDebug, "Parsing command with %lu files.", files.size());
 
 	std::stringstream stringBuilder;
 
@@ -130,7 +131,7 @@ int CallDiffTool(const RunParams& runParams, const PathSet& files)
 					long index = std::strtol(&param.c_str()[5], nullptr, 10) - 1;
 					if (index < 0 || index >= files.size())
 					{
-						std::cerr << "Error: file index in parameter '" << param << "' out of range.\n";
+						LogLine(kError, "file index in parameter '%s' out of range.", param.c_str());
 						return EX_IOERR;
 					}
 
@@ -142,7 +143,7 @@ int CallDiffTool(const RunParams& runParams, const PathSet& files)
 				stringBuilder << " " << param;
 			}
 
-			printf("    Parsed %s to %s\n", param.c_str(), stringBuilder.str().c_str());
+			LogLine(kDebug, "    Parsed %s to %s", param.c_str(), stringBuilder.str().c_str());
 		}
 	}
 	else
@@ -153,7 +154,7 @@ int CallDiffTool(const RunParams& runParams, const PathSet& files)
 	}
 
 	auto str = stringBuilder.str();
-	printf("Command Executed: %s\n", str.c_str());
+	LogLine(kDebug, "Command Executed: %s", str.c_str());
 
 
 	return system(str.c_str());;
@@ -176,7 +177,7 @@ void DoCallDiffTool(const DiffEntry& entry)
 	if (entry.rightFile)
 	paths.push_back(entry.rightFile->absolutePath);
 
-	printf("Diffing '%s' and '%s'\n", paths[0].c_str(), paths[1].c_str());
+	LogLine(kDebug, "Diffing '%s' and '%s'", paths[0].c_str(), paths[1].c_str());
 
 	RunParams& runParams = s_runParams;	
 	if (runParams.allowMultipleDiffs)
@@ -206,13 +207,13 @@ int main(const int argc, const char* argv[])
 
 	if (!runParams.noGUI && runParams.tool.empty())
 	{
-		std::cerr << "Error: Must supply diff tool for folder compare view. Use '--tool <tool>' to set tool or '--noGUI' to disable folder compare view.\n";
+		LogLine(kError, "Must supply diff tool for folder compare view. Use '--tool <tool>' to set tool or '--noGUI' to disable folder compare view.");
 		return EX_USAGE;
 	}
 
 	if (!GetPath(runParams.paths, kLeft) || !GetPath(runParams.paths, kRight))
 	{
-		std::cerr << "Error: You must supply at least two paths to diff.\n";
+		LogLine(kError, "You must supply at least two paths to diff.");
 		return EX_USAGE;
 	}
 
@@ -223,7 +224,7 @@ int main(const int argc, const char* argv[])
 
 	if (!allRegularFiles && !allDirectories)
 	{
-		std::cerr << "Error: Cannot diff both files and directories at the same time.\n";
+		LogLine(kError, "Cannot diff both files and directories at the same time.");
 		return EX_IOERR;
 	}
 
@@ -235,33 +236,30 @@ int main(const int argc, const char* argv[])
 	}
 	else
 	{
-		std::cout << "Diffing directories.\n";
+		LogLine(kDebug, "Diffing directories.");
 		DirectoryDiffState diffState;
 		GenerateDirectoryDiffState(runParams.paths, &diffState);
 
-
-		printf("Diff result:\n");
+		LogLine(kOutput, "Diff result:");
 
 		for (const DiffEntry& entry : diffState.sortedEntries)
 		{
 			assert(entry.leftFile != entry.rightFile);
 			if (entry.leftFile == nullptr)
-				printf("    [+] '%s'\n", entry.rightFile->relativePath.c_str());
+				LogLine(kOutput, "    [+] '%s'", entry.rightFile->relativePath.c_str());
 			else if (entry.rightFile == nullptr)
-				printf("    [-] '%s'\n", entry.leftFile->relativePath.c_str());	
+				LogLine(kOutput, "    [-] '%s'", entry.leftFile->relativePath.c_str());	
 			else if (entry.differs)
-				printf("    [M] '%s'\n", entry.leftFile->relativePath.c_str());	
+				LogLine(kOutput, "    [M] '%s'", entry.leftFile->relativePath.c_str());	
 			else
-				printf("    [=] '%s'\n", entry.leftFile->relativePath.c_str());	
+				LogLine(kOutput, "    [=] '%s'", entry.leftFile->relativePath.c_str());	
 		}
 
 		if (runParams.noGUI)
 		{
-			printf("Diff result:\n");
-
 			if (!runParams.tool.empty())
 			{
-				printf("Using tool to compare modified files...\n");
+				LogLine(kDebug, "Using tool to compare modified files...");
 
 				for (const DiffEntry& entry : diffState.sortedEntries)
 				{
@@ -295,7 +293,7 @@ int main(const int argc, const char* argv[])
 
 	if (!allDone)
 	{
-		printf("Waiting for diff tool to exit...\n");
+		LogLine(kDebug, "Waiting for diff tool to exit...");
 	}
 
 	// Wait for all workers to quit and clean up
