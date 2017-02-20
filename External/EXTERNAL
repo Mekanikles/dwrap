@@ -1,0 +1,9 @@
+External libs are not added to the repo.
+
+Build expects these directories to be present in the External folder:
+	* fltk-1.3.4
+		Include dir: '/.'
+		Lib dir: '/lib'
+			Source can be downloaded here: http://www.fltk.org/software.php?VERSION=1.3.4&FILE=fltk/1.3.4/fltk-1.3.4-1-source.tar.gz
+
+

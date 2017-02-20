@@ -1,8 +1,8 @@
+#include <atomic>  
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -56,7 +56,7 @@ bool InitRunParams(const std::vector<std::string>& arguments, not_null<RunParams
 				if (i >= argCount - 1)
 				{
 					LogLine(kError, "param '-tool' found but no tool command supplied.");
-					return EX_IOERR;
+					return false;
 				}
 
 				ParseDiffToolCommand(arguments[++i], outRunParams);
@@ -128,8 +128,8 @@ int CallDiffTool(const RunParams& runParams, const PathSet& files)
 			{
 				if (param.compare(1, 4, "FILE") == 0)
 				{
-					long index = std::strtol(&param.c_str()[5], nullptr, 10) - 1;
-					if (index < 0 || index >= files.size())
+				 long index = std::strtol(&param.c_str()[5], nullptr, 10) - 1;
+					if (index < 0 || index >= (int)files.size())
 					{
 						LogLine(kError, "file index in parameter '%s' out of range.", param.c_str());
 						return EX_IOERR;

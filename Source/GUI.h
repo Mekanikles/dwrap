@@ -5,6 +5,7 @@
 
 #include <FL/Fl.h>
 #include <FL/Fl_Window.h>
+#include <FL/Fl_Double_Window.h>
 #include <FL/Fl_Box.h>
 #include <FL/Fl_Tree.h>
 #include <FL/Fl_Scroll.h>
@@ -53,10 +54,10 @@ namespace GUI
 		int h = widgets.scroll->h();
 
 		int tree1H = widgets.tree1->GetTreeHeight();
-		widgets.tree1->resize(0, 0, w * 0.5, fmax(tree1H, h));
+		widgets.tree1->resize(0, 0, w / 2, (int)fmax(tree1H, h));
 
 		int tree2H = widgets.tree2->GetTreeHeight();
-		widgets.tree2->resize(w * 0.5, 0, w * 0.5, fmax(tree2H, h));
+		widgets.tree2->resize(w / 2, 0, w / 2, (int)fmax(tree2H, h));
 	}
 
 	Widgets g_Widgets;
@@ -73,10 +74,10 @@ namespace GUI
 		}
 	}
 
-	class CustomWindow : public Fl_Window
+	class CustomWindow : public Fl_Double_Window
 	{
 	public:
-		using Fl_Window::Fl_Window;
+		using Fl_Double_Window::Fl_Double_Window;
 		virtual void resize(int x, int y, int w, int h) override
 		{
 			Fl_Window::resize(x, y, w, h);

@@ -1,6 +1,9 @@
 #pragma once
+#include <algorithm>
 #include <vector>
 #include <string>
+
+#include <dirent.h>
 
 enum PathId
 {
@@ -148,8 +151,8 @@ bool FileEquals(const FileInfo& f1, const FileInfo& f2)
 	char buf2[kBufSize];
 	while(!fileStream1.eof())
 	{
-		const int bytesRead1 = fileStream1.read(buf1, kBufSize).gcount();
-		const int bytesRead2 = fileStream2.read(buf2, kBufSize).gcount();
+		const unsigned int bytesRead1 = (unsigned int)fileStream1.read(buf1, kBufSize).gcount();
+		const unsigned int bytesRead2 = (unsigned int)fileStream2.read(buf2, kBufSize).gcount();
 		assert(bytesRead1 == bytesRead2);
 		if(memcmp(buf1, buf2, bytesRead1) != 0)
 		{
