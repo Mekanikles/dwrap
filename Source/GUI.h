@@ -4,7 +4,6 @@
 #include <functional>
 
 #include <FL/Fl.h>
-#include <FL/Fl_Window.h>
 #include <FL/Fl_Double_Window.h>
 #include <FL/Fl_Box.h>
 #include <FL/Fl_Tree.h>
@@ -42,7 +41,7 @@ namespace GUI
 
 	struct Widgets
 	{
-		Fl_Window* window;
+		Fl_Double_Window* window;
 		Fl_Scroll* scroll;
 		CustomTree* tree1;
 		CustomTree* tree2;
@@ -80,7 +79,7 @@ namespace GUI
 		using Fl_Double_Window::Fl_Double_Window;
 		virtual void resize(int x, int y, int w, int h) override
 		{
-			Fl_Window::resize(x, y, w, h);
+			Fl_Double_Window::resize(x, y, w, h);
 			UpdateSizes(g_Widgets);
 		}
 
@@ -92,7 +91,7 @@ namespace GUI
 	                	HandleDoubleClick();
 	                break;
 	        }
-	        return(Fl_Window::handle(e));
+	        return(Fl_Double_Window::handle(e));
 	   }
 
 	};
